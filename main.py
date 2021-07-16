@@ -16,6 +16,10 @@ def train():
     print('model created... start to train...')
     model.fit(df_train)
 
+    step_ahead = 12
+    print(f'prediction for h={step_ahead}...')
+    model.predict(df_test, step_ahead=step_ahead)
+
 
 if __name__ == '__main__':
     train()

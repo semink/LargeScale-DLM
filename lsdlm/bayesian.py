@@ -22,14 +22,7 @@ def negative_log_evidence(x, T, s, V, X, M):
     return -log_evidence(alpha, beta, T, s, V, X, M)
 
 
-def exclude_nan(X, T):
-    x_valid_idx = np.all(~np.isnan(X), axis=0)
-    t_valid_idx = np.all(~np.isnan(T), axis=0)
-    valid_idx = x_valid_idx & t_valid_idx
-    return X[:, valid_idx], T[:, valid_idx]
-
-
-def get_optimal_x(x0, *args, bounds, method='L-BFGS-B', options={'maxiter': 500, 'tol': 1e-8, 'disp': True}):
+def get_optimal_x(x0, *args, bounds, method='L-BFGS-B', options={'maxiter': 500, 'tol': 1e-8, 'disp': False}):
     res = minimize(negative_log_evidence, x0=x0, args=args,
                    method=method,
                    bounds=bounds, options={'maxiter': options['maxiter'], 'disp': options['disp']},

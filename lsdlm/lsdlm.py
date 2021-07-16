@@ -5,6 +5,8 @@ from scipy.sparse import csgraph
 from scipy.linalg import expm
 from lsdlm import bayesian as bay
 from tqdm import tqdm
+from itertools import cycle, islice
+
 
 
 class DLM:
@@ -58,15 +60,14 @@ class DLM:
             i = np.where(self.hour_vec == hour)
 
             X, T = Vt.T, Vtp1.T
-            success, self.params[hour] = bay.get_optimal_H(X, T, self.M)
+            H, success, self.params[hour] = bay.get_optimal_H(X, T, self.M)
             alpha, gamma = self.params[hour]['alpha'], self.params[hour]['gamma']
             s, _ = np.linalg.eigh(X @ X.T)
             p_data, p_prior = np.linalg.norm(alpha * s / (alpha * s + gamma)), np.linalg.norm(
                 gamma / (alpha * s + gamma))
             self.params[hour]['p_data'] = p_data
             self.params[hour]['p_prior'] = p_prior
-            Hp = self.M @ self.params[hour]['pi']
-            self.H[hour] = (alpha * T @ X.T + gamma * Hp) @ np.linalg.pinv(alpha * X @ X.T + gamma * np.eye(N))
+            self.H[hour] = H
             if not success: print(f'fail to train H for {hour}.')
 
         self.hour_vec = pd.to_datetime(list(set(train_df.index.strftime('%H:%M')))).sort_values().strftime(
@@ -76,15 +77,19 @@ class DLM:
         for i, hour in enumerate(tqdm(self.hour_vec)):
             Vt = df_scaled.at_time(hour)
             valid_idx = (Vt.index + dt).isin(df_scaled.index)
-            Vtp1 = df_scaled.loc[(Vt.index + dt)[valid_idx]]
-            Vt = df_scaled.loc[Vt.index[valid_idx]]
+            Vtp1 = df_scaled.loc[(Vt.index + dt)[valid_idx]].values
+            Vt = df_scaled.loc[Vt.index[valid_idx]].values
             fit_hour(Vt, Vtp1, hour)
 
     def predict(self, df, step_ahead=1):
+        dfs = []
         df = pd.DataFrame(self.scaler.transform(df), index=df.index, columns=df.columns)
-        for _ in tqdm(range(step_ahead)):
-            df = df.apply(lambda x: self._mulH(x), axis=1, result_type='broadcast').shift().dropna()
-        return pd.DataFrame(self.scaler.inverse_transform(df), index=df.index, columns=df.columns)
+        for i, hour in tqdm(enumerate(self.hour_vec)):
+            df_hour = df.at_time(hour)
+            H = np.linalg.multi_dot([self.H[circular_hour] for circular_hour in islice(cycle(self.hour_vec), i, i+step_ahead)])
+            dfs.append((H@df_hour.T).T)
+        df_pred = pd.concat(dfs).sort_index()
+        return pd.DataFrame(self.scaler.inverse_transform(df_pred), index=df.index, columns=df.columns)
 
     def evaluate(self, df, max_step=3):
         pred_df = pd.DataFrame(self.scaler.transform(df), index=df.index, columns=df.columns)
