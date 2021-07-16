@@ -6,6 +6,7 @@ from scipy.linalg import expm
 from lsdlm import bayesian as bay
 from tqdm import tqdm
 from itertools import cycle, islice
+import pickle, os
 
 
 
@@ -104,7 +105,6 @@ class DLM:
         return pd.DataFrame.from_dict(err, orient='index', columns=['mae [mph]', 'mape [%]', 'rmse [mph]'])
 
     def save_model(self, path, fn):
-        import pickle, os
         fp = os.path.join(path, fn)
         with open(fp, 'wb') as f:
             pickle.dump(self, f)

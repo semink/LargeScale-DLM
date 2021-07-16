@@ -1,4 +1,5 @@
 from lsdlm import utils, lsdlm
+import pickle
 
 
 def train():
@@ -10,11 +11,14 @@ def train():
     df_train, df_test = utils.split_dataset(df_raw)
     print('done.')
 
-    adj = utils.load_graph(df_meta, path='data/adj_mx_bay.pkl')
+    # if you want to train a model, uncomment following part
+    # adj = utils.load_graph(df_meta, path='data/adj_mx_bay.pkl')
+    # model = lsdlm.DLM(adj_mx=adj)
+    # print('model created... start to train...')
+    # model.fit(df_train)
+    # model.save_model('data', 'pretrained.model')
 
-    model = lsdlm.DLM(adj_mx=adj)
-    print('model created... start to train...')
-    model.fit(df_train)
+    model = pickle.load(open('data/pretrained.model', 'rb'))
 
     step_ahead = 12
     print(f'prediction for h={step_ahead}...')

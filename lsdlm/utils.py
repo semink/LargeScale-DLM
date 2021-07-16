@@ -5,7 +5,6 @@ import pandas as pd
 import pickle
 
 
-
 def load_pretrained_model():
     url = 'https://zenodo.org/record/4264445/files/pretrained.pkl'
     return pd.read_pickle(url)
