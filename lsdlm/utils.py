@@ -10,7 +10,7 @@ def load_pretrained_model():
     return pd.read_pickle(url)
 
 
-def load_dataset(name='PEMS-BAY', replace_nan=0, freq='5T'):
+def load_dataset(name='PEMS-BAY', replace_nan=np.NaN, freq='5T'):
     if not os.path.isfile('data/PEMS-BAY.csv'):
         url_data = 'https://zenodo.org/record/4264005/files/PEMS-BAY.csv'
         pd.read_csv(url_data, index_col=0).to_csv('data/PEMS-BAY.csv')
