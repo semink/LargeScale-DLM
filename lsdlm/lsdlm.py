@@ -84,7 +84,7 @@ class DLM:
     def predict(self, df, step_ahead=1):
         dfs = []
         df = pd.DataFrame(self.scaler.transform(df), index=df.index, columns=df.columns)
-        for i, hour in tqdm(enumerate(self.hour_vec)):
+        for i, hour in tqdm(enumerate(self.hour_vec), desc=f'prediction for h={step_ahead}...'):
             df_hour = df.at_time(hour)
             Hs = [self.H[circular_hour] for circular_hour in islice(cycle(self.hour_vec), i, i + step_ahead)]
             H = np.linalg.multi_dot(Hs[::-1])       # should be reverse order!!

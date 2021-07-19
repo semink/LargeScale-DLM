@@ -11,6 +11,7 @@ def load_pretrained_model():
 
 
 def load_dataset(name='PEMS-BAY', replace_nan=np.NaN, freq='5T'):
+    print('loading dataset...', end=' ')
     if not os.path.isfile('data/PEMS-BAY.csv'):
         url_data = 'https://zenodo.org/record/4264005/files/PEMS-BAY.csv'
         pd.read_csv(url_data, index_col=0).to_csv('data/PEMS-BAY.csv')
@@ -23,7 +24,9 @@ def load_dataset(name='PEMS-BAY', replace_nan=np.NaN, freq='5T'):
     df_raw = df_raw.resample(freq).asfreq().fillna(replace_nan)
 
     df_meta = pd.read_csv('data/PEMS-BAY-META.csv', index_col=0)
-
+    df_raw.columns = df_raw.columns.astype(df_meta.index.dtype)
+    df_raw = df_raw[df_meta.index]
+    print('done.')
     return df_raw, df_meta
 
 
@@ -75,7 +78,7 @@ def preprocess(df, threshold={'max': 90, 'min': 0},
         x[x < threshold['min']] = threshold['min']
         return x
 
-    tqdm.pandas(desc='Threshold cutting')
+    tqdm.pandas(desc='pre-processing the dataset...')
     df = df.progress_apply(cut)
 
     # replace
@@ -89,6 +92,7 @@ def preprocess(df, threshold={'max': 90, 'min': 0},
 
 
 def split_dataset(df, rule={'train': 8, 'test': 2}, cut_by_day=True):
+    print(f'splitting dataset to training and test set ({rule["train"]}:{rule["test"]} ratio)...', end=' ')
     if cut_by_day:
         days = list(dict.fromkeys(df.index.strftime('%Y-%m-%d')))
         n_of_days = len(days)
@@ -98,4 +102,5 @@ def split_dataset(df, rule={'train': 8, 'test': 2}, cut_by_day=True):
         n = df.shape[1]
         train_cut = int(n * (rule['train'] / (rule['train'] + rule['test'])))
         train_df, test_df = df.iloc[:train_cut], df.iloc[train_cut + 1:]
+    print('done.')
     return train_df, test_df
