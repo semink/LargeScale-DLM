@@ -24,7 +24,7 @@ class DLM:
         self.scaler = StandardScaler()
 
         # laplacian matrix
-        self.L = csgraph.laplacian(self.adj_mx, normed=False)
+        self.L = csgraph.laplacian(self.adj_mx, normed=False).T
         if tau is None: self.tau = self._search_tau(num_diff_periods)
         else: self.tau = tau
         self.M = np.stack([expm(-tau * self.L) for tau in self.tau], axis=2)
@@ -86,10 +86,10 @@ class DLM:
         df = pd.DataFrame(self.scaler.transform(df), index=df.index, columns=df.columns)
         for i, hour in tqdm(enumerate(self.hour_vec)):
             df_hour = df.at_time(hour)
-            H = np.linalg.multi_dot(
-                [self.H[circular_hour] for circular_hour in islice(cycle(self.hour_vec), i, i + step_ahead)])
+            Hs = [self.H[circular_hour] for circular_hour in islice(cycle(self.hour_vec), i, i + step_ahead)]
+            H = np.linalg.multi_dot(Hs[::-1])       # should be reverse order!!
             dfs.append((H @ df_hour.T).T)
-        df_pred = pd.concat(dfs).sort_index().shift(step_ahead)
+        df_pred = pd.concat(dfs).sort_index().shift(step_ahead).dropna()
         return pd.DataFrame(self.scaler.inverse_transform(df_pred), index=df_pred.index, columns=df.columns)
 
     def save_model(self, path, fn):
