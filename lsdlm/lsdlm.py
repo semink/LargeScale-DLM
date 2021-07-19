@@ -66,14 +66,7 @@ class DLM:
         def fit_hour(Vt, Vtp1, hour):
             Vt, Vtp1 = self._exclude_nan(Vt, Vtp1)
             X, T = Vt.T, Vtp1.T
-            H, success, self.params[hour] = bay.get_optimal_H(X, T, self.M)
-            alpha, gamma = self.params[hour]['alpha'], self.params[hour]['gamma']
-            s, _ = np.linalg.eigh(X @ X.T)
-            p_data, p_prior = np.linalg.norm(alpha * s / (alpha * s + gamma)), np.linalg.norm(
-                gamma / (alpha * s + gamma))
-            self.params[hour]['p_data'] = p_data
-            self.params[hour]['p_prior'] = p_prior
-            self.H[hour] = H
+            self.H[hour], success, self.params[hour] = bay.get_optimal_H(X, T, self.M)
             if not success: print(f'fail to train H for {hour}.')
 
         self.hour_vec = pd.to_datetime(list(set(train_df.index.strftime('%H:%M')))).sort_values().strftime(
