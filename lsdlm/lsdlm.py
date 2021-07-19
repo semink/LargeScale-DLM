@@ -92,7 +92,6 @@ class DLM:
         df_pred = pd.concat(dfs).sort_index().shift(step_ahead).dropna()
         return pd.DataFrame(self.scaler.inverse_transform(df_pred), index=df_pred.index, columns=df.columns)
 
-    def save_model(self, path, fn):
-        fp = os.path.join(path, fn)
-        with open(fp, 'wb') as f:
+    def save_model(self, path):
+        with open(path, 'wb') as f:
             pickle.dump(self, f)
