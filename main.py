@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
     train_model_path = 'data/pretrained.model'
     train(save_to=train_model_path, df_train=df_train, df_meta=df_meta)  # Please comment this line once a pretrained
-    # model is saved as it will take around 12 min.
+    # model is saved as it will take around 16 min.
 
     model = pickle.load(open(train_model_path, 'rb'))
     before = time.time()

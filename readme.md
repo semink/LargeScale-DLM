@@ -21,14 +21,15 @@ python main.py
 ```
 ```angular2html
 loading dataset... done.
-pre-processing the dataset...: 100%|█████████| 325/325 [00:01<00:00, 318.11it/s]
+pre-processing the dataset...: 100%|█████████| 325/325 [00:01<00:00, 321.49it/s]
 splitting dataset to training and test set (8:2 ratio)... done.
-prediction for h=3...: 288it [00:01, 248.01it/s]
-RMSE: 2.9031507875713225
+tau_short = 0.0001
+tau_long = 1000
+model created... start to train...
+100%|█████████████████████████████████████████| 288/288 [16:28<00:00,  3.43s/it]
+training finished!
+prediction for h=12...: 288it [00:04, 57.86it/s]
+RMSE: 4.438168067142786
 
-prediction for h=6...: 288it [00:01, 164.04it/s]
-RMSE: 3.764874720345656
-
-prediction for h=12...: 288it [00:03, 79.01it/s]
-RMSE: 4.438127452863711
+Total computation for prediction: 5.1492767333984375 sec
 ```
