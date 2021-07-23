@@ -87,6 +87,7 @@ class DLM:
         for i, hour in tqdm(enumerate(self.hour_vec), desc=f'prediction for h={step_ahead}...'):
             df_hour = df.at_time(hour)
             Hs = [self.H[circular_hour] for circular_hour in islice(cycle(self.hour_vec), i, i + step_ahead)]
+            Hs.append(np.eye(self.H['00:00'].shape[0]))
             H = np.linalg.multi_dot(Hs[::-1])       # should be reverse order!!
             dfs.append((H @ df_hour.T).T)
         df_pred = pd.concat(dfs).sort_index().shift(step_ahead).dropna()
