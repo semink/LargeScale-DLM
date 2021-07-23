@@ -5,7 +5,6 @@ import time
 
 
 def train(df_train, df_meta, save_to='data/pretrained.model'):
-    # if you want to train a model, uncomment following part
     adj = utils.load_graph(df_meta, path='data/adj_mx_bay.pkl')
     model = lsdlm.DLM(adj_mx=np.maximum(adj, adj.T), num_diff_periods=5)  # undirected graph
     print('model created... start to train...')
