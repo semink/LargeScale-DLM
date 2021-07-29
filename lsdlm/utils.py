@@ -5,37 +5,28 @@ import pandas as pd
 import pickle
 
 
-def load_pretrained_model():
-    url = 'https://zenodo.org/record/4264445/files/pretrained.pkl'
-    return pd.read_pickle(url)
+def load_dataset(name='PEMS-BAY', replace_nan=0, freq='5T'):
+    print(f'loading {name} dataset...', end=' ')
+    if not os.path.isfile(f'data/{name}.csv'):
+        print(f'download from web...', end=' ')
+        url_data = f'https://zenodo.org/record/5146275/files/{name}.csv'
+        pd.read_csv(url_data, index_col=0).to_csv(f'data/{name}.csv')
 
-
-def load_dataset(name='PEMS-BAY', replace_nan=np.NaN, freq='5T'):
-    print('loading dataset...', end=' ')
-    if not os.path.isfile('data/PEMS-BAY.csv'):
-        url_data = 'https://zenodo.org/record/4264005/files/PEMS-BAY.csv'
-        pd.read_csv(url_data, index_col=0).to_csv('data/PEMS-BAY.csv')
-    if not os.path.isfile('data/PEMS-BAY-META.csv'):
-        url_meta = 'https://zenodo.org/record/4264005/files/PEMS-BAY-META.csv'
-        pd.read_csv(url_meta, index_col=0).to_csv('data/PEMS-BAY-META.csv')
-
-    df_raw = pd.read_csv('data/PEMS-BAY.csv', index_col=0)
+    df_raw = pd.read_csv(f'data/{name}.csv', index_col=0)
     df_raw.index = pd.to_datetime(df_raw.index)
     df_raw = df_raw.resample(freq).asfreq().fillna(replace_nan)
-
-    df_meta = pd.read_csv('data/PEMS-BAY-META.csv', index_col=0)
-    df_raw.columns = df_raw.columns.astype(df_meta.index.dtype)
-    df_raw = df_raw[df_meta.index]
+    adj = load_graph(df_raw.columns, path=f'data/adj_mx_{name}.pkl')
     print('done.')
-    return df_raw, df_meta
+    return df_raw, adj
 
 
-def load_graph(df_meta, path='data/adj_mx_bay.pkl'):
+def load_graph(sensors, path='data/adj_mx_PEMS-BAY.pkl'):
     with open(path, 'rb') as f:
         sensor_ids, sensor_id_to_ind, adj_mx = pickle.load(f, encoding='latin1')
 
-    order = [sensor_id_to_ind[str(sensor)] for sensor in df_meta.index]
-    adj = np.zeros((df_meta.shape[0], df_meta.shape[0]))
+    N = len(sensors)
+    order = [sensor_id_to_ind[str(sensor)] for sensor in sensors]
+    adj = np.zeros((N, N))
     for i, o_r in enumerate(order):
         for j, o_c in enumerate(order):
             adj[i, j] = adj_mx[o_r, o_c]
@@ -70,9 +61,13 @@ def mask_by_time(df, time_between, offset=0):
     return df.iloc[mask]
 
 
-def preprocess(df, threshold={'max': 90, 'min': 0},
-               replace={'from': np.NaN, 'to': np.NaN}):
+def preprocess(df, threshold=None, replace=None):
     # threshold cut
+    if replace is None:
+        replace = {'from': np.NaN, 'to': np.NaN}
+    if threshold is None:
+        threshold = {'max': 90, 'min': 0}
+
     def cut(x):
         x[x > threshold['max']] = threshold['max']
         x[x < threshold['min']] = threshold['min']
@@ -91,7 +86,9 @@ def preprocess(df, threshold={'max': 90, 'min': 0},
     return df
 
 
-def split_dataset(df, rule={'train': 8, 'test': 2}, cut_by_day=True):
+def split_dataset(df, rule=None, cut_by_day=True):
+    if rule is None:
+        rule = {'train': 8, 'test': 2}
     print(f'splitting dataset to training and test set ({rule["train"]}:{rule["test"]} ratio)...', end=' ')
     if cut_by_day:
         days = list(dict.fromkeys(df.index.strftime('%Y-%m-%d')))
