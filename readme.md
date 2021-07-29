@@ -17,7 +17,7 @@ pip install -r requirements.txt
 
 # Train and evaluation
 ```angular2html
-python main.py
+python main.py --dataset PEMS-BAY    # for METR-LA dataset: --dataset METR-LA
 ```
 ```angular2html
 loading dataset... done.
@@ -28,8 +28,8 @@ tau_long = 1000
 model created... start to train...
 100%|█████████████████████████████████████████| 288/288 [16:28<00:00,  3.43s/it]
 training finished!
-prediction for h=12...: 288it [00:04, 57.86it/s]
-RMSE: 4.438168067142786
+prediction for h=6...: 288it [00:01, 149.84it/s]
+RMSE: 3.77
 
-Total computation for prediction: 5.1492767333984375 sec
+Total computation for prediction: 2.15 sec
 ```
