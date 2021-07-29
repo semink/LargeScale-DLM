@@ -18,7 +18,7 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', default='PEMS-BAY', type=str,
                         choices=['PEMS-BAY', 'METR-LA'])
     parser.add_argument('--horizon', default=3, type=int)
-
+    parser.add_argument('--train', default=True, type=bool)
     args = parser.parse_args()
 
     df_raw, adj = utils.load_dataset(name=args.dataset, replace_nan=0.0)
@@ -26,8 +26,8 @@ if __name__ == '__main__':
     df_test = utils.preprocess(df_test, replace={'from': 0.0, 'to': np.NaN})
 
     train_model_path = f'data/pretrained_{args.dataset}.model'
-    train(save_to=train_model_path, training_dataset=df_train, weight_matrix=adj)  # Please comment this line once a
-    # pretrained
+    if args.train:
+        train(save_to=train_model_path, training_dataset=df_train, weight_matrix=adj)
     # model is saved as it will take around 16 min.
 
     model = pickle.load(open(train_model_path, 'rb'))
