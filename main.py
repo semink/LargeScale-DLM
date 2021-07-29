@@ -17,6 +17,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', default='PEMS-BAY', type=str,
                         choices=['PEMS-BAY', 'METR-LA'])
+    parser.add_argument('--horizon', default=3, type=int)
 
     args = parser.parse_args()
 
@@ -25,13 +26,12 @@ if __name__ == '__main__':
     df_test = utils.preprocess(df_test, replace={'from': 0.0, 'to': np.NaN})
 
     train_model_path = f'data/pretrained_{args.dataset}.model'
-    # train(save_to=train_model_path, training_dataset=df_train, weight_matrix=adj)  # Please comment this line once a
+    train(save_to=train_model_path, training_dataset=df_train, weight_matrix=adj)  # Please comment this line once a
     # pretrained
     # model is saved as it will take around 16 min.
 
     model = pickle.load(open(train_model_path, 'rb'))
     before = time.time()
-    step_ahead = 6
-    df_pred = model.predict(df_test, step_ahead=step_ahead)
+    df_pred = model.predict(df_test, step_ahead=args.horizon)
     print(f'RMSE: {np.sqrt(((df_test - df_pred) ** 2).mean().mean()):.2f}\n')
     print(f'Total computation for prediction: {time.time() - before:.2f} sec')
