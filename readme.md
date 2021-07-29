@@ -17,7 +17,7 @@ pip install -r requirements.txt
 
 # Train and evaluation
 ```angular2html
-python main.py --dataset PEMS-BAY --horizon 6    # for METR-LA dataset: --dataset METR-LA
+python main.py --dataset PEMS-BAY --horizon 6 --train   # for METR-LA dataset: --dataset METR-LA
 ```
 ```angular2html
 loading dataset... done.
