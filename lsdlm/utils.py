@@ -3,6 +3,14 @@ import numpy as np
 from tqdm import tqdm
 import pandas as pd
 import pickle
+from pathlib import Path
+
+
+def get_project_root() -> Path:
+    return Path(__file__).parent.parent
+
+
+root = get_project_root()
 
 
 def load_pretrained_model():
@@ -11,23 +19,23 @@ def load_pretrained_model():
 
 
 def load_dataset(name='PEMS-BAY', replace_nan=np.NaN, freq='5T'):
-    if not os.path.isfile('data/PEMS-BAY.csv'):
+    if not os.path.isfile(os.path.join(root, 'data/PEMS-BAY.csv')):
         url_data = 'https://zenodo.org/record/4264005/files/PEMS-BAY.csv'
-        pd.read_csv(url_data, index_col=0).to_csv('data/PEMS-BAY.csv')
+        pd.read_csv(url_data, index_col=0).to_csv(os.path.join(root, 'data/PEMS-BAY.csv'))
     if not os.path.isfile('data/PEMS-BAY-META.csv'):
         url_meta = 'https://zenodo.org/record/4264005/files/PEMS-BAY-META.csv'
-        pd.read_csv(url_meta, index_col=0).to_csv('data/PEMS-BAY-META.csv')
+        pd.read_csv(url_meta, index_col=0).to_csv(os.path.join(root, 'data/PEMS-BAY-META.csv'))
 
-    df_raw = pd.read_csv('data/PEMS-BAY.csv', index_col=0)
+    df_raw = pd.read_csv(os.path.join(root,'data/PEMS-BAY.csv'), index_col=0)
     df_raw.index = pd.to_datetime(df_raw.index)
     df_raw = df_raw.resample(freq).asfreq().fillna(replace_nan)
 
-    df_meta = pd.read_csv('data/PEMS-BAY-META.csv', index_col=0)
+    df_meta = pd.read_csv(os.path.join(root,'data/PEMS-BAY-META.csv'), index_col=0)
 
     return df_raw, df_meta
 
 
-def load_graph(df_meta, path='data/adj_mx_bay.pkl'):
+def load_graph(df_meta, path=os.path.join(root,'data/adj_mx_bay.pkl')):
     with open(path, 'rb') as f:
         sensor_ids, sensor_id_to_ind, adj_mx = pickle.load(f, encoding='latin1')
 
